@@ -1,9 +1,11 @@
 name: Build and Push Docker Image
 
+# Trigger workflow on push to main branch
 on:
   push:
     branches: [ main ]
 
+# Define environment variables (from repository secrets)
 env:
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   IMAGE_NAME: hello-world-python
@@ -14,27 +16,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # Step 1: Checkout the source code
     - name: Checkout code
       uses: actions/checkout@v3
 
+    # Step 2: Log in to Docker Hub using credentials from secrets
     - name: Log in to Docker Hub
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+    # Step 3: Build the Docker image with the 'latest' tag
     - name: Build Docker image
       run: |
         docker build -t $DOCKERHUB_USERNAME/$IMAGE_NAME:latest .
 
+    # Step 4: Tag the image with a custom tag from secrets
     - name: Tag image with custom tag
       run: |
         docker tag $DOCKERHUB_USERNAME/$IMAGE_NAME:latest $DOCKERHUB_USERNAME/$IMAGE_NAME:$CUSTOM_TAG
 
+    # Step 5: Push the 'latest' tag to Docker Hub
     - name: Push latest tag
       run: |
         docker push $DOCKERHUB_USERNAME/$IMAGE_NAME:latest
 
+    # Step 6: Push the custom tag to Docker Hub
     - name: Push custom tag
       run: |
         docker push $DOCKERHUB_USERNAME/$IMAGE_NAME:$CUSTOM_TAG
